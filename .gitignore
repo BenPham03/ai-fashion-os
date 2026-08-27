@@ -1,0 +1,23 @@
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.*
+!.env.example
+!.env.test.example
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Runtime / generated assets
+.tmp/
+tmp/
+artifacts/
+output/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
