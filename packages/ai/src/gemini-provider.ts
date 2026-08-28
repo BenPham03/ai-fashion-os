@@ -8,15 +8,20 @@ export interface GeminiProviderOptions {
 
 export class GeminiProvider implements AiProvider {
   readonly name = 'gemini';
-  private readonly client: GoogleGenAI;
+  private readonly client: GoogleGenAI | null;
 
   constructor(private readonly options: GeminiProviderOptions) {
-    if (!options.apiKey) throw new Error('GEMINI_API_KEY is required');
-    if (!options.defaultModel) throw new Error('GEMINI_MODEL is required');
-    this.client = new GoogleGenAI({ apiKey: options.apiKey });
+    this.client = options.apiKey ? new GoogleGenAI({ apiKey: options.apiKey }) : null;
   }
 
   async generate(request: AiGenerateRequest): Promise<AiGenerateResult> {
+    if (!this.client) {
+      throw new Error('GEMINI_API_KEY is required for AI generation');
+    }
+    if (!this.options.defaultModel && !request.model) {
+      throw new Error('GEMINI_MODEL is required for AI generation');
+    }
+
     const model = request.model ?? this.options.defaultModel;
     const startedAt = Date.now();
     const response = await this.client.models.generateContent({

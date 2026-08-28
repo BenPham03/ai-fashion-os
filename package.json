@@ -4,6 +4,7 @@
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
+    "postinstall": "prisma generate",
     "build": "npm run build -w @ai-fashion/ai && npm run build -w @ai-fashion/shared && npm run build -w @ai-fashion/api && npm run build -w @ai-fashion/worker",
     "dev:api": "npm run dev -w @ai-fashion/api",
     "dev:worker": "npm run dev -w @ai-fashion/worker",

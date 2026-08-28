@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
@@ -15,6 +16,10 @@ const worker = new Worker(
     const workflow = await prisma.workflowRun.findUnique({ where: { id: workflowId } });
     if (!workflow) throw new Error(`Workflow ${workflowId} not found`);
 
+    if (workflow.status === 'SUCCEEDED') {
+      return { workflowId, status: workflow.status, reused: true };
+    }
+
     await prisma.workflowRun.update({
       where: { id: workflowId },
       data: { status: 'RUNNING', startedAt: workflow.startedAt ?? new Date(), attempt: { increment: 1 } },
@@ -23,7 +28,7 @@ const worker = new Worker(
     // Foundation dispatcher. Specialized workflow handlers are added per FUNCTION_SPEC area.
     await prisma.workflowRun.update({
       where: { id: workflowId },
-      data: { status: 'SUCCEEDED', completedAt: new Date() },
+      data: { status: 'SUCCEEDED', completedAt: new Date(), errorCode: null, errorMessage: null },
     });
 
     return { workflowId, status: 'SUCCEEDED' };
