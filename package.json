@@ -1,0 +1,24 @@
+{
+  "name": "ai-fashion-os",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "build": "npm run build -w @ai-fashion/ai && npm run build -w @ai-fashion/shared && npm run build -w @ai-fashion/api && npm run build -w @ai-fashion/worker",
+    "dev:api": "npm run dev -w @ai-fashion/api",
+    "dev:worker": "npm run dev -w @ai-fashion/worker",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "lint": "eslint \"{apps,packages}/**/*.ts\"",
+    "format": "prettier --write \"{apps,packages}/**/*.{ts,json}\""
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "prisma": "^6.0.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

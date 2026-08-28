@@ -1,0 +1,40 @@
+import { GoogleGenAI } from '@google/genai';
+import { AiGenerateRequest, AiGenerateResult, AiProvider } from './ai-provider';
+
+export interface GeminiProviderOptions {
+  apiKey: string;
+  defaultModel: string;
+}
+
+export class GeminiProvider implements AiProvider {
+  readonly name = 'gemini';
+  private readonly client: GoogleGenAI;
+
+  constructor(private readonly options: GeminiProviderOptions) {
+    if (!options.apiKey) throw new Error('GEMINI_API_KEY is required');
+    if (!options.defaultModel) throw new Error('GEMINI_MODEL is required');
+    this.client = new GoogleGenAI({ apiKey: options.apiKey });
+  }
+
+  async generate(request: AiGenerateRequest): Promise<AiGenerateResult> {
+    const model = request.model ?? this.options.defaultModel;
+    const startedAt = Date.now();
+    const response = await this.client.models.generateContent({
+      model,
+      contents: request.prompt,
+      config: { responseMimeType: request.responseMimeType ?? 'application/json' },
+    });
+
+    const usage = response.usageMetadata;
+    return {
+      text: response.text ?? '',
+      model,
+      durationMs: Date.now() - startedAt,
+      usage: usage ? {
+        inputTokens: usage.promptTokenCount,
+        outputTokens: usage.candidatesTokenCount,
+        totalTokens: usage.totalTokenCount,
+      } : undefined,
+    };
+  }
+}

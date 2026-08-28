@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AutonomyMode {
+  MANUAL
+  HITL
+  AUTONOMOUS
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+enum WorkflowStatus {
+  QUEUED
+  RUNNING
+  SUCCEEDED
+  FAILED
+  PAUSED
+}
+
+model Campaign {
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  objective     String?
+  targetAudience String?
+  autonomyMode  AutonomyMode   @default(HITL)
+  status        CampaignStatus @default(DRAFT)
+  aiBudget      Decimal?       @db.Decimal(12, 4)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  workflows     WorkflowRun[]
+}
+
+model WorkflowRun {
+  id             String         @id @default(uuid()) @db.Uuid
+  campaignId     String?        @db.Uuid
+  workflowType   String
+  state          String
+  status         WorkflowStatus @default(QUEUED)
+  idempotencyKey String         @unique
+  attempt        Int            @default(0)
+  errorCode      String?
+  errorMessage   String?
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  campaign       Campaign?      @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@index([campaignId])
+  @@index([status, createdAt])
+}
